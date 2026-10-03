@@ -1,0 +1,69 @@
+plugins {
+    id 'java-library'
+    id 'idea'
+    id 'net.neoforged.moddev' version '2.0.78'
+}
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = mod_id
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+neoForge {
+    version = project.neo_version
+
+    runs {
+        client {
+            client()
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+        server {
+            server()
+            programArgument '--nogui'
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+        }
+    }
+}
+
+repositories {
+    mavenLocal()
+    maven { url = 'https://maven.createmod.net' }              // Create, Ponder, Flywheel
+    maven { url = 'https://maven.ithundxr.dev/snapshots' }     // Registrate
+    maven { url = 'https://maven.blamejared.com/' }            // JEI
+}
+
+def jeiVersion = project.findProperty('jei_version') ?: '19.21.0.247'
+
+dependencies {
+    implementation("com.simibubi.create:create-${minecraft_version}:${create_version}") { transitive = false }
+    implementation("net.createmod.ponder:ponder-neoforge:${ponder_version}+mc${minecraft_version}")
+    compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${minecraft_version}:${flywheel_version}")
+    runtimeOnly("dev.engine-room.flywheel:flywheel-neoforge-${minecraft_version}:${flywheel_version}")
+    implementation("com.tterrag.registrate:Registrate:${registrate_version}")
+
+    // JEI: API for compiling the plugin, full JEI in the dev client so you can test it
+    compileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jeiVersion}")
+    compileOnly("mezz.jei:jei-${minecraft_version}-neoforge-api:${jeiVersion}")
+    runtimeOnly("mezz.jei:jei-${minecraft_version}-neoforge:${jeiVersion}")
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}
